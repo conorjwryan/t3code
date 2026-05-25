@@ -1,4 +1,8 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
+import { DEFAULT_DARK_MODE_BACKGROUND } from "@t3tools/contracts/settings";
+
+import { applyDarkModeBackgroundPreference } from "../themeSurface";
+import { getClientSettings } from "./useSettings";
 
 type Theme = "light" | "dark" | "system";
 type ThemeSnapshot = {
@@ -94,6 +98,10 @@ function applyTheme(theme: Theme, suppressTransitions = false) {
   }
   const isDark = theme === "dark" || (theme === "system" && getSystemDark());
   document.documentElement.classList.toggle("dark", isDark);
+  applyDarkModeBackgroundPreference(
+    getClientSettings().darkModeBackground ?? DEFAULT_DARK_MODE_BACKGROUND,
+    isDark,
+  );
   syncBrowserChromeTheme();
   syncDesktopTheme(theme);
   if (suppressTransitions) {

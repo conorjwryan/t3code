@@ -1,0 +1,44 @@
+{
+  "schemaVersion": 2,
+  "createdAt": "2026-05-25T09:25:03.280Z",
+  "lastUpdatedAt": "2026-05-25T09:36:37.953Z",
+  "repo": {
+    "rootName": "t3code",
+    "upstreamRemote": "origin",
+    "upstreamUrl": "git@github.com:conorjwryan/t3code.git",
+    "trackingBranch": "main",
+    "initializedAtCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+    "latestObservedUpstreamCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+    "latestObservedLocalCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9"
+  },
+  "activeFeatures": [],
+  "features": {},
+  "activeChanges": [
+    "dark-background-selector"
+  ],
+  "changes": {
+    "dark-background-selector": {
+      "name": "Dark Background Selector",
+      "status": "experimental",
+      "createdAt": "2026-05-25T09:29:22.871Z",
+      "createdAtCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+      "description": "Add a settings control that lets users choose the dark-mode application background color instead of the default white/light surface behavior.",
+      "currentState": "current",
+      "latestCapturedBaselineCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+      "latestAppliedUpstreamCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+      "latestVersionPath": "changes/dark-background-selector/versions/4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+      "latestVerifiedUpstreamCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9"
+    }
+  },
+  "skills": {
+    "codexInstall": 2,
+    "codexImplementChange": 2,
+    "codexRefreshChanges": 2,
+    "claudeInstall": 2,
+    "claudeImplementChange": 2,
+    "claudeRefreshChanges": 2,
+    "genericInstall": 2,
+    "genericImplementChange": 2,
+    "genericRefreshChanges": 2
+  }
+}
