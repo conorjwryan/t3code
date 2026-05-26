@@ -6,14 +6,19 @@ Use this project-local skill when asked to apply or reconcile Patchee features.
 
 1. Read `.patchee/manifest.json` before changing code.
 2. Use `patchee change status` before starting implementation work.
-3. Start or resume one tracked change at a time.
-4. Treat `changes/<change>/patch.md` as the behavioral contract.
-5. Treat `reference-diff.patch` as implementation evidence, not a patch to apply blindly.
-6. Preserve user-facing behavior, consistency rules, and tests over exact line matching.
-7. Respect files listed under "Files to avoid changing" unless the change explicitly requires otherwise.
-8. Run checks listed in `tests.md` or `patch.md` when available.
-9. Record conflicts, deviations, files changed, and checks before finishing a change.
-10. Use `patchee change outdated --json` and the refresh skill when updating tracked changes to a newer upstream commit.
+3. Prefer branch-based work:
+   - keep clean upstream separate from customized branches
+   - use `patchee/main` as the maintained customized branch when the project follows that convention
+   - use short-lived `patchee/<change-slug>` branches for new implementations or refreshes
+4. Start or resume one tracked change at a time.
+5. Treat `changes/<change>/patch.md` as the behavioral contract.
+6. Treat `reference-diff.patch` as implementation evidence, not a patch to apply blindly.
+7. Preserve user-facing behavior, consistency rules, and tests over exact line matching.
+8. Respect files listed under "Files to avoid changing" unless the change explicitly requires otherwise.
+9. Run checks listed in `tests.md` or `patch.md` when available.
+10. Record conflicts, deviations, files changed, and checks before finishing a change.
+11. Use `patchee change outdated --json` and the refresh skill when updating tracked changes to a newer upstream commit.
+
 
 ## Codex workflow
 
@@ -21,5 +26,7 @@ Use this project-local skill when asked to apply or reconcile Patchee features.
 - Keep edits scoped to the active feature.
 - Avoid unrelated formatting or refactors.
 - Use targeted patches and preserve user changes already present in the worktree.
+- Prefer working on a short-lived `patchee/<change-slug>` branch when implementing or refreshing a tracked change.
 - Run the feature checks where practical.
 - Summarize conflicts, deviations from the reference implementation, and tests run.
+
