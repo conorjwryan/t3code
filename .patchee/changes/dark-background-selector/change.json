@@ -1,0 +1,48 @@
+{
+  "schemaVersion": 2,
+  "slug": "dark-background-selector",
+  "name": "Dark Background Selector",
+  "status": "experimental",
+  "createdAt": "2026-05-25T09:29:22.871Z",
+  "createdAtCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+  "description": "Add a settings control that lets users choose the dark-mode application background color instead of the default white/light surface behavior.",
+  "versions": {
+    "4f0f24f055fe5f5346f7e73372e8cdc167e052f9": {
+      "upstreamCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+      "baseRef": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
+      "capturedFromWorkingTree": true,
+      "capturedAt": "2026-05-25T09:36:22.216Z",
+      "changedFiles": [
+        "apps/desktop/src/settings/DesktopClientSettings.test.ts",
+        "apps/web/src/components/settings/SettingsPanels.tsx",
+        "apps/web/src/hooks/useSettings.ts",
+        "apps/web/src/hooks/useTheme.ts",
+        "apps/web/src/localApi.test.ts",
+        "packages/contracts/src/settings.test.ts",
+        "packages/contracts/src/settings.ts"
+      ],
+      "referenceDiffPath": "versions/4f0f24f055fe5f5346f7e73372e8cdc167e052f9/reference-diff.patch",
+      "applicationNotePath": "versions/4f0f24f055fe5f5346f7e73372e8cdc167e052f9/application.md",
+      "verified": false
+    },
+    "1e63952fca6b6dd42257d541ad2def85f97814fe": {
+      "upstreamCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe",
+      "baseRef": "1e63952fca6b6dd42257d541ad2def85f97814fe",
+      "capturedFromWorkingTree": true,
+      "capturedAt": "2026-05-26T10:38:59.367Z",
+      "changedFiles": [
+        "apps/desktop/src/settings/DesktopClientSettings.test.ts",
+        "apps/web/src/components/settings/SettingsPanels.tsx",
+        "apps/web/src/hooks/useSettings.ts",
+        "apps/web/src/hooks/useTheme.ts",
+        "apps/web/src/localApi.test.ts",
+        "apps/web/src/themeSurface.ts",
+        "packages/contracts/src/settings.test.ts",
+        "packages/contracts/src/settings.ts"
+      ],
+      "referenceDiffPath": "versions/1e63952fca6b6dd42257d541ad2def85f97814fe/reference-diff.patch",
+      "applicationNotePath": "versions/1e63952fca6b6dd42257d541ad2def85f97814fe/application.md",
+      "verified": false
+    }
+  }
+}

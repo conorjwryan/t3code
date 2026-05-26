@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
 import { useCallback, useMemo, useRef, useState } from "react";
 import {
   defaultInstanceIdForDriver,
+  type DarkModeBackground,
   type DesktopUpdateChannel,
   PROVIDER_DISPLAY_NAMES,
   ProviderDriverKind,
@@ -12,7 +13,10 @@ import {
   type ScopedThreadRef,
 } from "@t3tools/contracts";
 import { scopeThreadRef } from "@t3tools/client-runtime";
-import { DEFAULT_UNIFIED_SETTINGS } from "@t3tools/contracts/settings";
+import {
+  DEFAULT_DARK_MODE_BACKGROUND,
+  DEFAULT_UNIFIED_SETTINGS,
+} from "@t3tools/contracts/settings";
 import { createModelSelection } from "@t3tools/shared/model";
 import * as Duration from "effect/Duration";
 import * as Equal from "effect/Equal";
@@ -92,6 +96,33 @@ const THEME_OPTIONS = [
     label: "Dark",
   },
 ] as const;
+
+const DARK_MODE_BACKGROUND_OPTIONS = [
+  {
+    value: "default",
+    label: "Default",
+    swatch: "color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white))",
+  },
+  {
+    value: "black",
+    label: "Black",
+    swatch: "#000000",
+  },
+  {
+    value: "graphite",
+    label: "Graphite",
+    swatch: "oklch(0.16 0 0)",
+  },
+  {
+    value: "midnight",
+    label: "Midnight",
+    swatch: "oklch(0.15 0.026 264)",
+  },
+] as const satisfies ReadonlyArray<{
+  value: DarkModeBackground;
+  label: string;
+  swatch: string;
+}>;
 
 const TIMESTAMP_FORMAT_LABELS = {
   locale: "System default",
@@ -390,6 +421,9 @@ export function useSettingsRestore(onRestored?: () => void) {
   const changedSettingLabels = useMemo(
     () => [
       ...(theme !== "system" ? ["Theme"] : []),
+      ...(settings.darkModeBackground !== DEFAULT_UNIFIED_SETTINGS.darkModeBackground
+        ? ["Dark background"]
+        : []),
       ...(settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat
         ? ["Time format"]
         : []),
@@ -432,6 +466,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       settings.confirmThreadArchive,
       settings.confirmThreadDelete,
       settings.addProjectBaseDirectory,
+      settings.darkModeBackground,
       settings.defaultThreadEnvMode,
       settings.diffIgnoreWhitespace,
       settings.diffWordWrap,
@@ -456,6 +491,7 @@ export function useSettingsRestore(onRestored?: () => void) {
     setTheme("system");
     updateSettings({
       timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
+      darkModeBackground: DEFAULT_UNIFIED_SETTINGS.darkModeBackground,
       diffWordWrap: DEFAULT_UNIFIED_SETTINGS.diffWordWrap,
       diffIgnoreWhitespace: DEFAULT_UNIFIED_SETTINGS.diffIgnoreWhitespace,
       sidebarThreadPreviewCount: DEFAULT_UNIFIED_SETTINGS.sidebarThreadPreviewCount,
@@ -543,6 +579,60 @@ export function GeneralSettingsPanel() {
                 {THEME_OPTIONS.map((option) => (
                   <SelectItem hideIndicator key={option.value} value={option.value}>
                     {option.label}
+                  </SelectItem>
+                ))}
+              </SelectPopup>
+            </Select>
+          }
+        />
+
+        <SettingsRow
+          title="Dark background"
+          description="Choose the application surface used when the resolved theme is dark."
+          resetAction={
+            settings.darkModeBackground !== DEFAULT_DARK_MODE_BACKGROUND ? (
+              <SettingResetButton
+                label="dark background"
+                onClick={() =>
+                  updateSettings({
+                    darkModeBackground: DEFAULT_DARK_MODE_BACKGROUND,
+                  })
+                }
+              />
+            ) : null
+          }
+          control={
+            <Select
+              value={settings.darkModeBackground}
+              onValueChange={(value) => {
+                if (
+                  value === "default" ||
+                  value === "black" ||
+                  value === "graphite" ||
+                  value === "midnight"
+                ) {
+                  updateSettings({ darkModeBackground: value });
+                }
+              }}
+            >
+              <SelectTrigger className="w-full sm:w-40" aria-label="Dark background">
+                <SelectValue>
+                  {DARK_MODE_BACKGROUND_OPTIONS.find(
+                    (option) => option.value === settings.darkModeBackground,
+                  )?.label ?? "Default"}
+                </SelectValue>
+              </SelectTrigger>
+              <SelectPopup align="end" alignItemWithTrigger={false}>
+                {DARK_MODE_BACKGROUND_OPTIONS.map((option) => (
+                  <SelectItem hideIndicator key={option.value} value={option.value}>
+                    <span className="flex items-center gap-2">
+                      <span
+                        className="size-3 rounded-sm border border-border"
+                        style={{ backgroundColor: option.swatch }}
+                        aria-hidden
+                      />
+                      {option.label}
+                    </span>
                   </SelectItem>
                 ))}
               </SelectPopup>

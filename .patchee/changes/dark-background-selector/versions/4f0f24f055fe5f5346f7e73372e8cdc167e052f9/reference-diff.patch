@@ -1,0 +1,294 @@
+diff --git a/apps/desktop/src/settings/DesktopClientSettings.test.ts b/apps/desktop/src/settings/DesktopClientSettings.test.ts
+index f666e692..229324bb 100644
+--- a/apps/desktop/src/settings/DesktopClientSettings.test.ts
++++ b/apps/desktop/src/settings/DesktopClientSettings.test.ts
+@@ -15,6 +15,7 @@ const clientSettings: ClientSettings = {
+   autoOpenPlanSidebar: false,
+   confirmThreadArchive: true,
+   confirmThreadDelete: false,
++  darkModeBackground: "black",
+   dismissedProviderUpdateNotificationKeys: [],
+   diffIgnoreWhitespace: true,
+   diffWordWrap: true,
+diff --git a/apps/web/src/components/settings/SettingsPanels.tsx b/apps/web/src/components/settings/SettingsPanels.tsx
+index e7f21da4..7a7b7c91 100644
+--- a/apps/web/src/components/settings/SettingsPanels.tsx
++++ b/apps/web/src/components/settings/SettingsPanels.tsx
+@@ -4,6 +4,7 @@ import { Link } from "@tanstack/react-router";
+ import { useCallback, useMemo, useRef, useState } from "react";
+ import {
+   defaultInstanceIdForDriver,
++  type DarkModeBackground,
+   type DesktopUpdateChannel,
+   PROVIDER_DISPLAY_NAMES,
+   ProviderDriverKind,
+@@ -12,7 +13,10 @@ import {
+   type ScopedThreadRef,
+ } from "@t3tools/contracts";
+ import { scopeThreadRef } from "@t3tools/client-runtime";
+-import { DEFAULT_UNIFIED_SETTINGS } from "@t3tools/contracts/settings";
++import {
++  DEFAULT_DARK_MODE_BACKGROUND,
++  DEFAULT_UNIFIED_SETTINGS,
++} from "@t3tools/contracts/settings";
+ import { createModelSelection } from "@t3tools/shared/model";
+ import * as Duration from "effect/Duration";
+ import * as Equal from "effect/Equal";
+@@ -93,6 +97,33 @@ const THEME_OPTIONS = [
+   },
+ ] as const;
+ 
++const DARK_MODE_BACKGROUND_OPTIONS = [
++  {
++    value: "default",
++    label: "Default",
++    swatch: "color-mix(in srgb, var(--color-neutral-950) 95%, var(--color-white))",
++  },
++  {
++    value: "black",
++    label: "Black",
++    swatch: "#000000",
++  },
++  {
++    value: "graphite",
++    label: "Graphite",
++    swatch: "oklch(0.16 0 0)",
++  },
++  {
++    value: "midnight",
++    label: "Midnight",
++    swatch: "oklch(0.15 0.026 264)",
++  },
++] as const satisfies ReadonlyArray<{
++  value: DarkModeBackground;
++  label: string;
++  swatch: string;
++}>;
++
+ const TIMESTAMP_FORMAT_LABELS = {
+   locale: "System default",
+   "12-hour": "12-hour",
+@@ -390,6 +421,9 @@ export function useSettingsRestore(onRestored?: () => void) {
+   const changedSettingLabels = useMemo(
+     () => [
+       ...(theme !== "system" ? ["Theme"] : []),
++      ...(settings.darkModeBackground !== DEFAULT_UNIFIED_SETTINGS.darkModeBackground
++        ? ["Dark background"]
++        : []),
+       ...(settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat
+         ? ["Time format"]
+         : []),
+@@ -432,6 +466,7 @@ export function useSettingsRestore(onRestored?: () => void) {
+       settings.confirmThreadArchive,
+       settings.confirmThreadDelete,
+       settings.addProjectBaseDirectory,
++      settings.darkModeBackground,
+       settings.defaultThreadEnvMode,
+       settings.diffIgnoreWhitespace,
+       settings.diffWordWrap,
+@@ -456,6 +491,7 @@ export function useSettingsRestore(onRestored?: () => void) {
+     setTheme("system");
+     updateSettings({
+       timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
++      darkModeBackground: DEFAULT_UNIFIED_SETTINGS.darkModeBackground,
+       diffWordWrap: DEFAULT_UNIFIED_SETTINGS.diffWordWrap,
+       diffIgnoreWhitespace: DEFAULT_UNIFIED_SETTINGS.diffIgnoreWhitespace,
+       sidebarThreadPreviewCount: DEFAULT_UNIFIED_SETTINGS.sidebarThreadPreviewCount,
+@@ -550,6 +586,60 @@ export function GeneralSettingsPanel() {
+           }
+         />
+ 
++        <SettingsRow
++          title="Dark background"
++          description="Choose the application surface used when the resolved theme is dark."
++          resetAction={
++            settings.darkModeBackground !== DEFAULT_DARK_MODE_BACKGROUND ? (
++              <SettingResetButton
++                label="dark background"
++                onClick={() =>
++                  updateSettings({
++                    darkModeBackground: DEFAULT_DARK_MODE_BACKGROUND,
++                  })
++                }
++              />
++            ) : null
++          }
++          control={
++            <Select
++              value={settings.darkModeBackground}
++              onValueChange={(value) => {
++                if (
++                  value === "default" ||
++                  value === "black" ||
++                  value === "graphite" ||
++                  value === "midnight"
++                ) {
++                  updateSettings({ darkModeBackground: value });
++                }
++              }}
++            >
++              <SelectTrigger className="w-full sm:w-40" aria-label="Dark background">
++                <SelectValue>
++                  {DARK_MODE_BACKGROUND_OPTIONS.find(
++                    (option) => option.value === settings.darkModeBackground,
++                  )?.label ?? "Default"}
++                </SelectValue>
++              </SelectTrigger>
++              <SelectPopup align="end" alignItemWithTrigger={false}>
++                {DARK_MODE_BACKGROUND_OPTIONS.map((option) => (
++                  <SelectItem hideIndicator key={option.value} value={option.value}>
++                    <span className="flex items-center gap-2">
++                      <span
++                        className="size-3 rounded-sm border border-border"
++                        style={{ backgroundColor: option.swatch }}
++                        aria-hidden
++                      />
++                      {option.label}
++                    </span>
++                  </SelectItem>
++                ))}
++              </SelectPopup>
++            </Select>
++          }
++        />
++
+         <SettingsRow
+           title="Time format"
+           description="System default follows your browser or OS clock preference."
+diff --git a/apps/web/src/hooks/useSettings.ts b/apps/web/src/hooks/useSettings.ts
+index 005c8ad8..fba7b136 100644
+--- a/apps/web/src/hooks/useSettings.ts
++++ b/apps/web/src/hooks/useSettings.ts
+@@ -22,6 +22,7 @@ import { ensureLocalApi } from "~/localApi";
+ import * as Struct from "effect/Struct";
+ import { applyServerSettingsPatch } from "@t3tools/shared/serverSettings";
+ import { applySettingsUpdated, getServerConfig, useServerSettings } from "~/rpc/serverState";
++import { applyDarkModeBackgroundPreference } from "~/themeSurface";
+ 
+ const CLIENT_SETTINGS_PERSISTENCE_ERROR_SCOPE = "[CLIENT_SETTINGS]";
+ 
+@@ -49,6 +50,7 @@ function getClientSettingsSnapshot(): ClientSettings {
+ 
+ function replaceClientSettingsSnapshot(settings: ClientSettings): void {
+   clientSettingsSnapshot = settings;
++  applyDarkModeBackgroundPreference(settings.darkModeBackground);
+   emitClientSettingsChange();
+ }
+ 
+diff --git a/apps/web/src/hooks/useTheme.ts b/apps/web/src/hooks/useTheme.ts
+index cd254c97..4f91ed2c 100644
+--- a/apps/web/src/hooks/useTheme.ts
++++ b/apps/web/src/hooks/useTheme.ts
+@@ -1,4 +1,8 @@
+ import { useCallback, useEffect, useSyncExternalStore } from "react";
++import { DEFAULT_DARK_MODE_BACKGROUND } from "@t3tools/contracts/settings";
++
++import { applyDarkModeBackgroundPreference } from "../themeSurface";
++import { getClientSettings } from "./useSettings";
+ 
+ type Theme = "light" | "dark" | "system";
+ type ThemeSnapshot = {
+@@ -94,6 +98,10 @@ function applyTheme(theme: Theme, suppressTransitions = false) {
+   }
+   const isDark = theme === "dark" || (theme === "system" && getSystemDark());
+   document.documentElement.classList.toggle("dark", isDark);
++  applyDarkModeBackgroundPreference(
++    getClientSettings().darkModeBackground ?? DEFAULT_DARK_MODE_BACKGROUND,
++    isDark,
++  );
+   syncBrowserChromeTheme();
+   syncDesktopTheme(theme);
+   if (suppressTransitions) {
+diff --git a/apps/web/src/localApi.test.ts b/apps/web/src/localApi.test.ts
+index 8bfb0e59..b5371183 100644
+--- a/apps/web/src/localApi.test.ts
++++ b/apps/web/src/localApi.test.ts
+@@ -602,6 +602,7 @@ describe("wsApi", () => {
+       autoOpenPlanSidebar: false,
+       confirmThreadArchive: true,
+       confirmThreadDelete: false,
++      darkModeBackground: "black" as const,
+       dismissedProviderUpdateNotificationKeys: [],
+       diffIgnoreWhitespace: true,
+       diffWordWrap: true,
+@@ -665,6 +666,7 @@ describe("wsApi", () => {
+       autoOpenPlanSidebar: false,
+       confirmThreadArchive: true,
+       confirmThreadDelete: false,
++      darkModeBackground: "black" as const,
+       dismissedProviderUpdateNotificationKeys: [],
+       diffIgnoreWhitespace: true,
+       diffWordWrap: true,
+diff --git a/packages/contracts/src/settings.test.ts b/packages/contracts/src/settings.test.ts
+index 39695fe3..7f53a6a8 100644
+--- a/packages/contracts/src/settings.test.ts
++++ b/packages/contracts/src/settings.test.ts
+@@ -2,12 +2,34 @@ import { describe, expect, it } from "vitest";
+ import * as Schema from "effect/Schema";
+ 
+ import { ProviderInstanceId } from "./providerInstance.ts";
+-import { DEFAULT_SERVER_SETTINGS, ServerSettings, ServerSettingsPatch } from "./settings.ts";
++import {
++  ClientSettingsPatch,
++  ClientSettingsSchema,
++  DEFAULT_CLIENT_SETTINGS,
++  DEFAULT_SERVER_SETTINGS,
++  ServerSettings,
++  ServerSettingsPatch,
++} from "./settings.ts";
+ 
++const decodeClientSettings = Schema.decodeUnknownSync(ClientSettingsSchema);
++const decodeClientSettingsPatch = Schema.decodeUnknownSync(ClientSettingsPatch);
+ const decodeServerSettings = Schema.decodeUnknownSync(ServerSettings);
+ const decodeServerSettingsPatch = Schema.decodeUnknownSync(ServerSettingsPatch);
+ const encodeServerSettings = Schema.encodeSync(ServerSettings);
+ 
++describe("ClientSettings.darkModeBackground", () => {
++  it("defaults to the built-in dark surface for legacy client settings", () => {
++    expect(DEFAULT_CLIENT_SETTINGS.darkModeBackground).toBe("default");
++    expect(decodeClientSettings({}).darkModeBackground).toBe("default");
++  });
++
++  it("accepts dark background patch values", () => {
++    expect(decodeClientSettingsPatch({ darkModeBackground: "black" }).darkModeBackground).toBe(
++      "black",
++    );
++  });
++});
++
+ describe("ServerSettings.providerInstances (slice-2 invariant)", () => {
+   it("defaults to an empty record so legacy configs without the key still decode", () => {
+     expect(DEFAULT_SERVER_SETTINGS.providerInstances).toEqual({});
+diff --git a/packages/contracts/src/settings.ts b/packages/contracts/src/settings.ts
+index 2d115eed..5dfdc9f9 100644
+--- a/packages/contracts/src/settings.ts
++++ b/packages/contracts/src/settings.ts
+@@ -13,6 +13,10 @@ export const TimestampFormat = Schema.Literals(["locale", "12-hour", "24-hour"])
+ export type TimestampFormat = typeof TimestampFormat.Type;
+ export const DEFAULT_TIMESTAMP_FORMAT: TimestampFormat = "locale";
+ 
++export const DarkModeBackground = Schema.Literals(["default", "black", "graphite", "midnight"]);
++export type DarkModeBackground = typeof DarkModeBackground.Type;
++export const DEFAULT_DARK_MODE_BACKGROUND: DarkModeBackground = "default";
++
+ export const SidebarProjectSortOrder = Schema.Literals(["updated_at", "created_at", "manual"]);
+ export type SidebarProjectSortOrder = typeof SidebarProjectSortOrder.Type;
+ export const DEFAULT_SIDEBAR_PROJECT_SORT_ORDER: SidebarProjectSortOrder = "updated_at";
+@@ -46,6 +50,9 @@ export const ClientSettingsSchema = Schema.Struct({
+   dismissedProviderUpdateNotificationKeys: Schema.Array(TrimmedNonEmptyString).pipe(
+     Schema.withDecodingDefault(Effect.succeed([])),
+   ),
++  darkModeBackground: DarkModeBackground.pipe(
++    Schema.withDecodingDefault(Effect.succeed(DEFAULT_DARK_MODE_BACKGROUND)),
++  ),
+   diffIgnoreWhitespace: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
+   diffWordWrap: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
+   // Model favorites. Historically keyed by provider kind, now
+@@ -478,6 +485,7 @@ export const ClientSettingsPatch = Schema.Struct({
+   autoOpenPlanSidebar: Schema.optionalKey(Schema.Boolean),
+   confirmThreadArchive: Schema.optionalKey(Schema.Boolean),
+   confirmThreadDelete: Schema.optionalKey(Schema.Boolean),
++  darkModeBackground: Schema.optionalKey(DarkModeBackground),
+   diffIgnoreWhitespace: Schema.optionalKey(Schema.Boolean),
+   diffWordWrap: Schema.optionalKey(Schema.Boolean),
+   favorites: Schema.optionalKey(
