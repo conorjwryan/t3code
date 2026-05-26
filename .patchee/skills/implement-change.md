@@ -1,4 +1,4 @@
-# Patchee Implement Change Skill (codex)
+# Patchee Implement Change Skill
 
 Use this when implementing a new tracked customization.
 

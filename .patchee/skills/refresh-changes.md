@@ -1,4 +1,4 @@
-# Patchee Refresh Changes Skill (claude)
+# Patchee Refresh Changes Skill
 
 Use this when updating existing tracked customizations to the latest upstream commit.
 

@@ -1,4 +1,4 @@
-# Patchee Install Skill (claude)
+# Patchee Install Skill
 
 Use this when adding Patchee tracking to an existing git repository.
 
@@ -19,5 +19,6 @@ Use this when adding Patchee tracking to an existing git repository.
 
 - `.patchee/manifest.json`
 - `.patchee/agent-instructions.md`
-- `.patchee/skills/claude-implement-change.md`
-- `.patchee/skills/claude-refresh-changes.md`
+- `.patchee/skills/install.md`
+- `.patchee/skills/implement-change.md`
+- `.patchee/skills/refresh-changes.md`
