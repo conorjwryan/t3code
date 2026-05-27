@@ -1,7 +1,10 @@
 import { useCallback, useEffect, useSyncExternalStore } from "react";
-import { DEFAULT_DARK_MODE_BACKGROUND } from "@t3tools/contracts/settings";
+import {
+  DEFAULT_DARK_MODE_BACKGROUND,
+  DEFAULT_LIGHT_MODE_BACKGROUND,
+} from "@t3tools/contracts/settings";
 
-import { applyDarkModeBackgroundPreference } from "../themeSurface";
+import { applyThemeBackgroundPreference, syncBrowserChromeTheme } from "../themeSurface";
 import { getClientSettings } from "./useSettings";
 
 type Theme = "light" | "dark" | "system";
@@ -16,9 +19,6 @@ const DEFAULT_THEME_SNAPSHOT: ThemeSnapshot = {
   theme: "system",
   systemDark: false,
 };
-const THEME_COLOR_META_NAME = "theme-color";
-const DYNAMIC_THEME_COLOR_SELECTOR = `meta[name="${THEME_COLOR_META_NAME}"][data-dynamic-theme-color="true"]`;
-
 let listeners: Array<() => void> = [];
 let lastSnapshot: ThemeSnapshot | null = null;
 let lastDesktopTheme: Theme | null = null;
@@ -42,55 +42,6 @@ function getStored(): Theme {
   return DEFAULT_THEME_SNAPSHOT.theme;
 }
 
-function ensureThemeColorMetaTag(): HTMLMetaElement {
-  let element = document.querySelector<HTMLMetaElement>(DYNAMIC_THEME_COLOR_SELECTOR);
-  if (element) {
-    return element;
-  }
-
-  element = document.createElement("meta");
-  element.name = THEME_COLOR_META_NAME;
-  element.setAttribute("data-dynamic-theme-color", "true");
-  document.head.append(element);
-  return element;
-}
-
-function normalizeThemeColor(value: string | null | undefined): string | null {
-  const normalizedValue = value?.trim().toLowerCase();
-  if (
-    !normalizedValue ||
-    normalizedValue === "transparent" ||
-    normalizedValue === "rgba(0, 0, 0, 0)" ||
-    normalizedValue === "rgba(0 0 0 / 0)"
-  ) {
-    return null;
-  }
-
-  return value?.trim() ?? null;
-}
-
-function resolveBrowserChromeSurface(): HTMLElement {
-  return (
-    document.querySelector<HTMLElement>("main[data-slot='sidebar-inset']") ??
-    document.querySelector<HTMLElement>("[data-slot='sidebar-inner']") ??
-    document.body
-  );
-}
-
-export function syncBrowserChromeTheme() {
-  if (typeof document === "undefined" || typeof getComputedStyle === "undefined") return;
-  const surfaceColor = normalizeThemeColor(
-    getComputedStyle(resolveBrowserChromeSurface()).backgroundColor,
-  );
-  const fallbackColor = normalizeThemeColor(getComputedStyle(document.body).backgroundColor);
-  const backgroundColor = surfaceColor ?? fallbackColor;
-  if (!backgroundColor) return;
-
-  document.documentElement.style.backgroundColor = backgroundColor;
-  document.body.style.backgroundColor = backgroundColor;
-  ensureThemeColorMetaTag().setAttribute("content", backgroundColor);
-}
-
 function applyTheme(theme: Theme, suppressTransitions = false) {
   if (typeof document === "undefined" || typeof window === "undefined") return;
   if (suppressTransitions) {
@@ -98,8 +49,12 @@ function applyTheme(theme: Theme, suppressTransitions = false) {
   }
   const isDark = theme === "dark" || (theme === "system" && getSystemDark());
   document.documentElement.classList.toggle("dark", isDark);
-  applyDarkModeBackgroundPreference(
-    getClientSettings().darkModeBackground ?? DEFAULT_DARK_MODE_BACKGROUND,
+  const clientSettings = getClientSettings();
+  applyThemeBackgroundPreference(
+    {
+      darkModeBackground: clientSettings.darkModeBackground ?? DEFAULT_DARK_MODE_BACKGROUND,
+      lightModeBackground: clientSettings.lightModeBackground ?? DEFAULT_LIGHT_MODE_BACKGROUND,
+    },
     isDark,
   );
   syncBrowserChromeTheme();

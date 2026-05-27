@@ -1,7 +1,7 @@
 {
   "schemaVersion": 2,
   "createdAt": "2026-05-25T09:25:03.280Z",
-  "lastUpdatedAt": "2026-05-26T10:39:29.920Z",
+  "lastUpdatedAt": "2026-05-27T04:07:40.873Z",
   "repo": {
     "rootName": "t3code",
     "upstreamRemote": "origin",
@@ -9,7 +9,7 @@
     "trackingBranch": "main",
     "initializedAtCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
     "latestObservedUpstreamCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe",
-    "latestObservedLocalCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe"
+    "latestObservedLocalCommit": "0537a061bcbfde54ef014c6fc34f281081f95aa9"
   },
   "activeFeatures": [],
   "features": {},
@@ -18,14 +18,13 @@
   ],
   "changes": {
     "dark-background-selector": {
-      "slug": "dark-background-selector",
       "name": "Dark Background Selector",
       "status": "experimental",
       "createdAt": "2026-05-25T09:29:22.871Z",
       "createdAtCommit": "4f0f24f055fe5f5346f7e73372e8cdc167e052f9",
       "description": "Add a settings control that lets users choose the dark-mode application background color instead of the default white/light surface behavior.",
       "currentState": "current",
-      "latestCapturedBaselineCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe",
+      "latestCapturedBaselineCommit": "0537a061bcbfde54ef014c6fc34f281081f95aa9",
       "latestAppliedUpstreamCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe",
       "latestVerifiedUpstreamCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe",
       "latestVersionPath": "changes/dark-background-selector/versions/1e63952fca6b6dd42257d541ad2def85f97814fe"

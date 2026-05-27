@@ -5,6 +5,7 @@ import { useCallback, useMemo, useRef, useState } from "react";
 import {
   defaultInstanceIdForDriver,
   type DarkModeBackground,
+  type LightModeBackground,
   type DesktopUpdateChannel,
   PROVIDER_DISPLAY_NAMES,
   ProviderDriverKind,
@@ -15,6 +16,7 @@ import {
 import { scopeThreadRef } from "@t3tools/client-runtime";
 import {
   DEFAULT_DARK_MODE_BACKGROUND,
+  DEFAULT_LIGHT_MODE_BACKGROUND,
   DEFAULT_UNIFIED_SETTINGS,
 } from "@t3tools/contracts/settings";
 import { createModelSelection } from "@t3tools/shared/model";
@@ -120,6 +122,38 @@ const DARK_MODE_BACKGROUND_OPTIONS = [
   },
 ] as const satisfies ReadonlyArray<{
   value: DarkModeBackground;
+  label: string;
+  swatch: string;
+}>;
+
+const LIGHT_MODE_BACKGROUND_OPTIONS = [
+  {
+    value: "default",
+    label: "Default",
+    swatch: "var(--color-white)",
+  },
+  {
+    value: "powder",
+    label: "Powder",
+    swatch: "oklch(0.97 0.028 235)",
+  },
+  {
+    value: "mint",
+    label: "Mint",
+    swatch: "oklch(0.97 0.032 165)",
+  },
+  {
+    value: "peach",
+    label: "Peach",
+    swatch: "oklch(0.96 0.04 55)",
+  },
+  {
+    value: "lavender",
+    label: "Lavender",
+    swatch: "oklch(0.96 0.034 300)",
+  },
+] as const satisfies ReadonlyArray<{
+  value: LightModeBackground;
   label: string;
   swatch: string;
 }>;
@@ -424,6 +458,9 @@ export function useSettingsRestore(onRestored?: () => void) {
       ...(settings.darkModeBackground !== DEFAULT_UNIFIED_SETTINGS.darkModeBackground
         ? ["Dark background"]
         : []),
+      ...(settings.lightModeBackground !== DEFAULT_UNIFIED_SETTINGS.lightModeBackground
+        ? ["Light background"]
+        : []),
       ...(settings.timestampFormat !== DEFAULT_UNIFIED_SETTINGS.timestampFormat
         ? ["Time format"]
         : []),
@@ -472,6 +509,7 @@ export function useSettingsRestore(onRestored?: () => void) {
       settings.diffWordWrap,
       settings.automaticGitFetchInterval,
       settings.enableAssistantStreaming,
+      settings.lightModeBackground,
       settings.sidebarThreadPreviewCount,
       settings.timestampFormat,
       theme,
@@ -492,6 +530,7 @@ export function useSettingsRestore(onRestored?: () => void) {
     updateSettings({
       timestampFormat: DEFAULT_UNIFIED_SETTINGS.timestampFormat,
       darkModeBackground: DEFAULT_UNIFIED_SETTINGS.darkModeBackground,
+      lightModeBackground: DEFAULT_UNIFIED_SETTINGS.lightModeBackground,
       diffWordWrap: DEFAULT_UNIFIED_SETTINGS.diffWordWrap,
       diffIgnoreWhitespace: DEFAULT_UNIFIED_SETTINGS.diffIgnoreWhitespace,
       sidebarThreadPreviewCount: DEFAULT_UNIFIED_SETTINGS.sidebarThreadPreviewCount,
@@ -514,7 +553,7 @@ export function useSettingsRestore(onRestored?: () => void) {
 }
 
 export function GeneralSettingsPanel() {
-  const { theme, setTheme } = useTheme();
+  const { theme, setTheme, resolvedTheme } = useTheme();
   const settings = useSettings();
   const { updateSettings } = useUpdateSettings();
   const observability = useServerObservability();
@@ -526,6 +565,20 @@ export function GeneralSettingsPanel() {
     otlpMetricsEnabled: observability?.otlpMetricsEnabled ?? false,
     otlpMetricsUrl: observability?.otlpMetricsUrl,
   });
+  const isResolvedDarkTheme = resolvedTheme === "dark";
+  const backgroundOptions = isResolvedDarkTheme
+    ? DARK_MODE_BACKGROUND_OPTIONS
+    : LIGHT_MODE_BACKGROUND_OPTIONS;
+  const backgroundPreference = isResolvedDarkTheme
+    ? settings.darkModeBackground
+    : settings.lightModeBackground;
+  const backgroundDefault = isResolvedDarkTheme
+    ? DEFAULT_DARK_MODE_BACKGROUND
+    : DEFAULT_LIGHT_MODE_BACKGROUND;
+  const backgroundTitle = isResolvedDarkTheme ? "Dark background" : "Light background";
+  const backgroundDescription = isResolvedDarkTheme
+    ? "Choose the application surface used when the resolved theme is dark."
+    : "Choose a light application surface with enough contrast for dark text.";
 
   const textGenerationModelSelection = resolveAppModelSelectionState(settings, serverProviders);
   const textGenInstanceId = textGenerationModelSelection.instanceId;
@@ -587,43 +640,61 @@ export function GeneralSettingsPanel() {
         />
 
         <SettingsRow
-          title="Dark background"
-          description="Choose the application surface used when the resolved theme is dark."
+          title={backgroundTitle}
+          description={backgroundDescription}
           resetAction={
-            settings.darkModeBackground !== DEFAULT_DARK_MODE_BACKGROUND ? (
+            backgroundPreference !== backgroundDefault ? (
               <SettingResetButton
-                label="dark background"
-                onClick={() =>
+                label={backgroundTitle.toLowerCase()}
+                onClick={() => {
+                  if (isResolvedDarkTheme) {
+                    updateSettings({
+                      darkModeBackground: DEFAULT_DARK_MODE_BACKGROUND,
+                    });
+                    return;
+                  }
                   updateSettings({
-                    darkModeBackground: DEFAULT_DARK_MODE_BACKGROUND,
-                  })
-                }
+                    lightModeBackground: DEFAULT_LIGHT_MODE_BACKGROUND,
+                  });
+                }}
               />
             ) : null
           }
           control={
             <Select
-              value={settings.darkModeBackground}
+              value={backgroundPreference}
               onValueChange={(value) => {
+                if (isResolvedDarkTheme) {
+                  if (
+                    value === "default" ||
+                    value === "black" ||
+                    value === "graphite" ||
+                    value === "midnight"
+                  ) {
+                    updateSettings({ darkModeBackground: value });
+                  }
+                  return;
+                }
+
                 if (
                   value === "default" ||
-                  value === "black" ||
-                  value === "graphite" ||
-                  value === "midnight"
+                  value === "powder" ||
+                  value === "mint" ||
+                  value === "peach" ||
+                  value === "lavender"
                 ) {
-                  updateSettings({ darkModeBackground: value });
+                  updateSettings({ lightModeBackground: value });
                 }
               }}
             >
-              <SelectTrigger className="w-full sm:w-40" aria-label="Dark background">
+              <SelectTrigger className="w-full sm:w-40" aria-label={backgroundTitle}>
                 <SelectValue>
-                  {DARK_MODE_BACKGROUND_OPTIONS.find(
-                    (option) => option.value === settings.darkModeBackground,
-                  )?.label ?? "Default"}
+                  {backgroundOptions.find((option) => option.value === backgroundPreference)
+                    ?.label ?? "Default"}
                 </SelectValue>
               </SelectTrigger>
               <SelectPopup align="end" alignItemWithTrigger={false}>
-                {DARK_MODE_BACKGROUND_OPTIONS.map((option) => (
+                {backgroundOptions.map((option) => (
                   <SelectItem hideIndicator key={option.value} value={option.value}>
                     <span className="flex items-center gap-2">
                       <span

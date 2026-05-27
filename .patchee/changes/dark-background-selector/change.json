@@ -27,15 +27,16 @@
     },
     "1e63952fca6b6dd42257d541ad2def85f97814fe": {
       "upstreamCommit": "1e63952fca6b6dd42257d541ad2def85f97814fe",
-      "baseRef": "1e63952fca6b6dd42257d541ad2def85f97814fe",
+      "baseRef": "0537a061bcbfde54ef014c6fc34f281081f95aa9",
       "capturedFromWorkingTree": true,
-      "capturedAt": "2026-05-26T10:38:59.367Z",
+      "capturedAt": "2026-05-27T04:07:37.811Z",
       "changedFiles": [
         "apps/desktop/src/settings/DesktopClientSettings.test.ts",
         "apps/web/src/components/settings/SettingsPanels.tsx",
         "apps/web/src/hooks/useSettings.ts",
         "apps/web/src/hooks/useTheme.ts",
         "apps/web/src/localApi.test.ts",
+        "apps/web/src/routes/__root.tsx",
         "apps/web/src/themeSurface.ts",
         "packages/contracts/src/settings.test.ts",
         "packages/contracts/src/settings.ts"

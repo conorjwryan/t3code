@@ -17,3 +17,11 @@ Refresh verification on 2026-05-26: bun fmt passed; bun lint passed with 9 exist
 ## 2026-05-26T10:38:59.236Z (implementation)
 
 Refresh tested against simulated upstream commit 1e63952fca6b6dd42257d541ad2def85f97814fe. The dark background behavior reapplied cleanly and preserved the upstream Theme wording change.
+
+## 2026-05-27T04:07:37.603Z (implementation)
+
+Refined the background selector to be resolved-theme aware: dark mode only offers dark background choices, light/system-light offers separate pastel light choices, both persisted as client settings, and browser chrome sync now runs when background settings change.
+
+## 2026-05-27T04:07:37.681Z (test)
+
+Verification: bun fmt; bun lint (completed with existing warnings only, no errors); bun typecheck.

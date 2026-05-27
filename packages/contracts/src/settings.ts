@@ -17,6 +17,16 @@ export const DarkModeBackground = Schema.Literals(["default", "black", "graphite
 export type DarkModeBackground = typeof DarkModeBackground.Type;
 export const DEFAULT_DARK_MODE_BACKGROUND: DarkModeBackground = "default";
 
+export const LightModeBackground = Schema.Literals([
+  "default",
+  "powder",
+  "mint",
+  "peach",
+  "lavender",
+]);
+export type LightModeBackground = typeof LightModeBackground.Type;
+export const DEFAULT_LIGHT_MODE_BACKGROUND: LightModeBackground = "default";
+
 export const SidebarProjectSortOrder = Schema.Literals(["updated_at", "created_at", "manual"]);
 export type SidebarProjectSortOrder = typeof SidebarProjectSortOrder.Type;
 export const DEFAULT_SIDEBAR_PROJECT_SORT_ORDER: SidebarProjectSortOrder = "updated_at";
@@ -52,6 +62,9 @@ export const ClientSettingsSchema = Schema.Struct({
   ),
   darkModeBackground: DarkModeBackground.pipe(
     Schema.withDecodingDefault(Effect.succeed(DEFAULT_DARK_MODE_BACKGROUND)),
+  ),
+  lightModeBackground: LightModeBackground.pipe(
+    Schema.withDecodingDefault(Effect.succeed(DEFAULT_LIGHT_MODE_BACKGROUND)),
   ),
   diffIgnoreWhitespace: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(true))),
   diffWordWrap: Schema.Boolean.pipe(Schema.withDecodingDefault(Effect.succeed(false))),
@@ -486,6 +499,7 @@ export const ClientSettingsPatch = Schema.Struct({
   confirmThreadArchive: Schema.optionalKey(Schema.Boolean),
   confirmThreadDelete: Schema.optionalKey(Schema.Boolean),
   darkModeBackground: Schema.optionalKey(DarkModeBackground),
+  lightModeBackground: Schema.optionalKey(LightModeBackground),
   diffIgnoreWhitespace: Schema.optionalKey(Schema.Boolean),
   diffWordWrap: Schema.optionalKey(Schema.Boolean),
   favorites: Schema.optionalKey(

@@ -30,6 +30,19 @@ describe("ClientSettings.darkModeBackground", () => {
   });
 });
 
+describe("ClientSettings.lightModeBackground", () => {
+  it("defaults to the built-in light surface for legacy client settings", () => {
+    expect(DEFAULT_CLIENT_SETTINGS.lightModeBackground).toBe("default");
+    expect(decodeClientSettings({}).lightModeBackground).toBe("default");
+  });
+
+  it("accepts light background patch values", () => {
+    expect(decodeClientSettingsPatch({ lightModeBackground: "mint" }).lightModeBackground).toBe(
+      "mint",
+    );
+  });
+});
+
 describe("ServerSettings.providerInstances (slice-2 invariant)", () => {
   it("defaults to an empty record so legacy configs without the key still decode", () => {
     expect(DEFAULT_SERVER_SETTINGS.providerInstances).toEqual({});
